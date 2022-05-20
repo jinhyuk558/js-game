@@ -46,25 +46,26 @@ class Sprite {
   }
 }
 
+
 class Character extends Sprite {
-  constructor({ position, imageSrc, framesMax, scale = 1, offset, velocity, sprites }) {
+  constructor({ position, imageSrc, framesMax, scale = 1, offset, velocity, sprites, characterDim }) {
     
     // position is top left. aligns with character sprite
     super({ position, imageSrc, framesMax, scale, offset })
-    this.velocity = velocity
-    this.gravity = 1.6
+    this.velocity = velocity 
+    this.gravity = 1.5
     this.sprites = sprites
 
     // used to track what animation to play / override
     this.currentSprite = 'idle'
     this.currentAnimType = 'move'
 
-    // rectangle dimensions for collision detection
-    this.width = 70
-    this.height = 65
-
     // direction character is facing
     this.direction = 'right'
+
+    // rectangle dimensions for collision detection
+    this.width = characterDim.x
+    this.height = characterDim.y
 
     for (const sprite in this.sprites) {
       this.sprites[sprite].image = new Image()
@@ -72,6 +73,9 @@ class Character extends Sprite {
     }
   }
   switchSprite(sprite) {
+
+    // if animation doesn't exist for this character, return
+    if (!this.sprites[sprite]) return
 
     // this prevetns the last frame from being called 5 times
     // looks okay as is, but could come up with a way that
@@ -84,6 +88,7 @@ class Character extends Sprite {
     }
 
     // check if animation sprites should be drawn horizontally
+    console.log(sprite)
     if (this.sprites[sprite].isHorizontal) {
       this.isHorizontal = true
     } else {
@@ -102,10 +107,22 @@ class Character extends Sprite {
       this.framesCurrent = 0
     }
   }
+  draw() {
+    c.drawImage(
+      this.image,
+      this.isHorizontal ? this.framesCurrent * this.image.width / this.framesMax : 0,
+      // temporarily add "+2" for a hacky way to remove the slightly visible top pixels
+      this.isHorizontal ? 0 : this.framesCurrent * this.image.height / this.framesMax + 2, 
+      this.isHorizontal ? this.image.width / this.framesMax : this.image.width,
+      this.isHorizontal ? this.image.height : this.image.height / this.framesMax,
+      this.position.x + (this.direction === 'left' ? (this.offset.x - this.image.width - this.width) : this.offset.x),
+      // this.position.x + this.offset.x + (this.direction === 'left' && (-this.width -(this.isHorizontal ? this.image.width / this.framesMax : this.image.width))),
+      this.position.y + this.offset.y,
+      this.isHorizontal ? this.image.width / this.framesMax * this.scale : this.image.width * this.scale,
+      this.isHorizontal ? this.image.height * this.scale : this.image.height / this.framesMax * this.scale
+    )
+  }
   update() {
-    
-
-
     // visualize collision rectangle
     c.fillStyle = 'rgba(255,255,255,0.1)'
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
@@ -113,9 +130,9 @@ class Character extends Sprite {
     this.position.x += this.velocity.x 
     this.position.y += this.velocity.y
 
-    if (this.position.y + this.velocity.y + this.height >= canvas.height - 50) {
+    if (this.position.y + this.velocity.y + this.height >= canvas.height - 30) {
       this.velocity.y = 0
-      this.position.y = canvas.height - 50 - this.height
+      this.position.y = canvas.height - 30 - this.height
     } else {
       this.velocity.y += this.gravity
     }
@@ -126,20 +143,18 @@ class Character extends Sprite {
       this.sprites[this.currentSprite].animOffset.frame === this.framesCurrent &&
       this.framesElapsed === 1
     ) {
-      // this.position.x += this.sprites[this.currentSprite].animOffset.x
-      // this.position.y += this.sprites[this.currentSprite].animOffset.y
       console.log('one')
       this.offset.x += this.sprites[this.currentSprite].animOffset.x
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
-      this.shouldRevert = true
+      this.shouldReposition = true
     }
 
     // if the previous animation had an animOffset, revert to original position
-    if (this.prevSprite && this.sprites[this.prevSprite].animOffset && this.shouldRevert) {
+    if (this.prevSprite && this.sprites[this.prevSprite].animOffset && this.shouldReposition) {
       console.log('two')
       this.offset.x -= this.sprites[this.prevSprite].animOffset.x
       // this.position.x -= this.sprites[this.prevSprite].animOffset.x
-      this.shouldRevert = false
+      this.shouldReposition = false
     }
 
     this.draw()

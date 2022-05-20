@@ -7,6 +7,21 @@ canvas.height = 576
 c.fillStyle = 'black'
 c.fillRect(0, 0, canvas.width, canvas.height)
 
+// background
+const background = new Sprite({
+  position: {
+    x: 0,
+    y: 0
+  },
+  imageSrc: './img/background.png',
+  framesMax: 1,
+  scale: 2,
+  offset: {
+    x: 0,
+    y: 0
+  }
+})
+
 
 // player
 const player2 = new Character({
@@ -60,6 +75,10 @@ const player2 = new Character({
     //   imageSrc: './img/chainBot/charge.png',
     //   framesMax: 
     // }
+  },
+  characterDim: {
+    x: 70,
+    y: 65
   }
 })
 
@@ -96,7 +115,7 @@ const player = new Character({
       type: 'move'
     },
     runLeft: {
-      imageSrc: './img/shockSweeper/shuffe(move).png',
+      imageSrc: './img/shockSweeper/shuffleLeft.png',
       framesMax: 8,
       type: 'move'
     },
@@ -121,7 +140,7 @@ const player = new Character({
       // handles when player sprite moves during attack animation
       animOffset: {
         frame: 3,
-        x: -150,
+        x: -120,
         y: 0
       },
       type: 'attack'
@@ -137,11 +156,15 @@ const player = new Character({
       framesMax: 3,
       isHorizontal: true,
       type: 'jumpOrFall'
-    }
+    },
     // charge: {
     //   imageSrc: './img/chainBot/charge.png',
     //   framesMax: 
     // }
+  },
+  characterDim: {
+    x: 50,
+    y: 65
   }
 })
 
@@ -173,10 +196,6 @@ function animate() {
   window.requestAnimationFrame(animate)
   c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
-
-  // draw ground 
-  c.fillStyle = '#6b7280'
-  c.fillRect(0, canvas.height - 50, canvas.width, canvas.height)
 
   // player movement
   if (keys.a.pressed && lastKey === 'a') {
@@ -220,7 +239,12 @@ function animate() {
 
 
 
+  background.update()
 
+  // draw ground 
+  c.fillStyle = 'black'
+  c.fillRect(0, canvas.height - 30, canvas.width, canvas.height)
+  
   player.update()
   player2.update()
 }
@@ -240,7 +264,7 @@ window.addEventListener('keydown', ({ key }) => {
       lastKey = 'd'
       break
     case 'w':
-      player.velocity.y = -20
+      player.velocity.y = -25
       break
     case 'q': 
       keys.q.pressed = true 
