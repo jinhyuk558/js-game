@@ -8,6 +8,7 @@ class Sprite {
     this.framesCurrent = 0
     this.framesHold = 5
     this.framesElapsed = 0
+    this.isHorizontal = false
 
     this.image = new Image()
     this.image.src = this.imageSrc
@@ -15,22 +16,25 @@ class Sprite {
   draw() {
     c.drawImage(
       this.image,
-      0,
-      this.framesCurrent * this.image.height / this.framesMax,
-      this.image.width,
-      this.image.height / this.framesMax,
+      this.isHorizontal ? this.framesCurrent * this.image.width / this.framesMax : 0,
+      // temporarily add "+2" for a hacky way to remove the slightly visible top pixels
+      this.isHorizontal ? 0 : this.framesCurrent * this.image.height / this.framesMax + 2, 
+      this.isHorizontal ? this.image.width / this.framesMax : this.image.width,
+      this.isHorizontal ? this.image.height : this.image.height / this.framesMax,
       this.position.x + this.offset.x,
       this.position.y + this.offset.y,
-      this.image.width * this.scale,
-      this.image.height / this.framesMax * this.scale
+      this.isHorizontal ? this.image.width / this.framesMax * this.scale : this.image.width * this.scale,
+      this.isHorizontal ? this.image.height * this.scale : this.image.height / this.framesMax * this.scale
     )
   }
   animateFrames() {
+    this.animFinishedLastFrame = false
     this.framesElapsed++
     if (this.framesElapsed % this.framesHold === 0) {
       this.framesElapsed = 0
       if (this.framesCurrent === this.framesMax - 1) {
         this.framesCurrent = 0
+        this.animFinishedLastFrame = true
       } else {
         this.framesCurrent++
       }
@@ -48,12 +52,16 @@ class Character extends Sprite {
     // position is top left. aligns with character sprite
     super({ position, imageSrc, framesMax, scale, offset })
     this.velocity = velocity
-    this.gravity = 0.7
+    this.gravity = 1.6
     this.sprites = sprites
+
+    // used to track what animation to play / override
+    this.currentSprite = 'idle'
+    this.currentAnimType = 'move'
 
     // rectangle dimensions for collision detection
     this.width = 70
-    this.height = 70
+    this.height = 65
 
     // direction character is facing
     this.direction = 'right'
@@ -67,74 +75,40 @@ class Character extends Sprite {
 
     // this prevetns the last frame from being called 5 times
     // looks okay as is, but could come up with a way that
-    // all the frames get run 5 times
-    if (this.image.src === this.sprites.attack.image.src && 
-      this.framesCurrent < this.sprites.attack.framesMax - 1) {
-        console.log(this.framesCurrent)
+    // all the frames get run 5 times. another function is to
+    // prevent other animations before attack or fall animations are complete
+    if ((this.currentAnimType === 'attack' || this.currentAnimType === 'jumpOrFall') &&
+      this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
+        console.log('1', this.currentAnimType)
         return
-      }
+    }
 
-    if (this.image.src === this.sprites.attackLeft.image.src && 
-      this.framesCurrent < this.sprites.attackLeft.framesMax - 1) {
-        console.log(this.framesCurrent)
-        return
-      }
-       
+    // check if animation sprites should be drawn horizontally
+    if (this.sprites[sprite].isHorizontal) {
+      this.isHorizontal = true
+    } else {
+      this.isHorizontal = false
+    }
 
-    switch(sprite) {
-      case 'runRight':
-        if (this.image.src !== this.sprites.runRight.image.src) {
-          this.image = this.sprites.runRight.image
-          this.framesMax = this.sprites.runRight.framesMax 
-          this.framesCurrent = 0
-        }
-        break
-      case 'idle':
-        if (this.image.src !== this.sprites.idle.image.src) {
-          this.image = this.sprites.idle.image
-          this.framesMax = this.sprites.idle.framesMax 
-          this.framesCurrent = 0
-        }
-        break
-      case 'idleLeft':
-        if (this.image.src !== this.sprites.idleLeft.image.src) {
-          this.image = this.sprites.idleLeft.image
-          this.framesMax = this.sprites.idleLeft.framesMax 
-          this.framesCurrent = 0
-        }
-        break
-      case 'runLeft':
-        if (this.image.src !== this.sprites.runLeft.image.src) {
-          this.image = this.sprites.runLeft.image
-          this.framesMax = this.sprites.runLeft.framesMax 
-          this.framesCurrent = 0
-        }
-        break
-      case 'attack':
-        console.log('attack right')
-        if (this.image.src !== this.sprites.attack.image.src) {
-          this.image = this.sprites.attack.image
-          this.framesMax = this.sprites.attack.framesMax 
-          this.framesCurrent = 0
-        }
-        break
-      case 'attackLeft':
-        console.log('attack left')
-        if (this.image.src !== this.sprites.attackLeft.image.src) {
-          this.image = this.sprites.attackLeft.image
-          this.framesMax = this.sprites.attackLeft.framesMax 
-          this.framesCurrent = 0
-        }
-        break
+    // set current sprite
+    this.prevSprite = this.currentSprite
+    this.currentSprite = sprite
+    this.currentAnimType = this.sprites[sprite].type
+
+    // switch sprites
+    if (this.image.src !== this.sprites[sprite].image.src) {
+      this.image = this.sprites[sprite].image 
+      this.framesMax = this.sprites[sprite].framesMax
+      this.framesCurrent = 0
     }
   }
   update() {
-    this.draw()
-    this.animateFrames()
+    
+
 
     // visualize collision rectangle
     c.fillStyle = 'rgba(255,255,255,0.1)'
-    // c.fillRect(this.position.x, this.position.y, this.width, this.height)
+    c.fillRect(this.position.x, this.position.y, this.width, this.height)
   
     this.position.x += this.velocity.x 
     this.position.y += this.velocity.y
@@ -145,5 +119,40 @@ class Character extends Sprite {
     } else {
       this.velocity.y += this.gravity
     }
+
+    
+    // update position if player sprite moves during ability
+    if (this.sprites[this.currentSprite].animOffset && 
+      this.sprites[this.currentSprite].animOffset.frame === this.framesCurrent &&
+      this.framesElapsed === 1
+    ) {
+      // this.position.x += this.sprites[this.currentSprite].animOffset.x
+      // this.position.y += this.sprites[this.currentSprite].animOffset.y
+      console.log('one')
+      this.offset.x += this.sprites[this.currentSprite].animOffset.x
+      this.position.x -= this.sprites[this.currentSprite].animOffset.x
+      this.shouldRevert = true
+    }
+
+    // if the previous animation had an animOffset, revert to original position
+    if (this.prevSprite && this.sprites[this.prevSprite].animOffset && this.shouldRevert) {
+      console.log('two')
+      this.offset.x -= this.sprites[this.prevSprite].animOffset.x
+      // this.position.x -= this.sprites[this.prevSprite].animOffset.x
+      this.shouldRevert = false
+    }
+
+    this.draw()
+    this.animateFrames()
+    
+
   }
 }
+
+
+
+
+// TODO:
+// The best way to account for the sprite chaning positoins is to simply change
+// the position of the hitbox at the right frame. This white hitbox will be used for
+// collision detectyion
