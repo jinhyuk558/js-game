@@ -233,14 +233,20 @@ function animate() {
 
   // player movement
   if (keys.a.pressed && lastKey === 'a') {
-    player.velocity.x = -3
-    
-    player.switchSprite('runLeft')
+    if (!player.wouldCollideWithEnemy(player2, 'left')) {
+      player.velocity.x = -3
+      player.switchSprite('runLeft')
+    } else {
+      player.velocity.x = 0
+    }
     // player.direction = 'left'
   } else if (keys.d.pressed && lastKey === 'd') {
-    player.velocity.x = 3
-    
-    player.switchSprite('run')
+    if (!player.wouldCollideWithEnemy(player2, 'right')) {
+      player.velocity.x = 3
+      player.switchSprite('run') 
+    } else {
+      player.velocity.x = 0
+    }
     // player.direction = 'right'
   } else {
     player.velocity.x = 0

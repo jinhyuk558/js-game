@@ -78,6 +78,12 @@ class Character extends Sprite {
     this.width = characterDim.x
     this.height = characterDim.y
 
+    // width of small rectangle to not allow players
+    // to complete pass one another. rectangle should
+    // from center of collision box and expand based on
+    // width defined here
+    this.physicsBoxWidth = 17
+
     for (const sprite in this.sprites) {
       this.sprites[sprite].image = new Image()
       this.sprites[sprite].image.src = this.sprites[sprite].imageSrc
@@ -130,14 +136,31 @@ class Character extends Sprite {
       this.prevSprite = this.currentSprite
       this.currentSprite = sprite
       this.currentAnimType = this.sprites[sprite].type
-      console.log(this.prevSprite)
     }
   }
   // returns true if player would collide with rect on next frame
-  wouldCollide(rect) {
-    return (
-      this.position.x 
+  // using this.physicsBoxWidth
+  wouldCollideWithEnemy(enemy, dir) {
+    let collidesVerticaly = (
+      this.position.y + this.height >= enemy.position.y && this.position.y < enemy.position.y + enemy.height
     )
+    if (!collidesVerticaly) return
+
+    if (dir === 'right') {
+      const diff = (this.position.x + this.width / 2 + 10 + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
+     
+      if (diff >= 0 && diff <= this.velocity.x) {
+        this.position.x -= this.velocity.x
+        return true
+      }
+    } else if (dir === 'left') {
+      const diff = ((enemy.position.x + enemy.width / 2 + 10) - (this.position.x + this.width / 2 - 10 + this.velocity.x))
+        if (diff >= 0 && diff < Math.abs(this.velocity.x)) {
+          this.position.x -= this.velocity.x
+          return true
+        }
+    }
+    return false
   }
   draw() {
     c.drawImage(
