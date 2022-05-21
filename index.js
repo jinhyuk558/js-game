@@ -24,7 +24,6 @@ const background = new Sprite({
 
 
 // player
-/*
 const player2 = new Character({
   position: {
     x: 300,
@@ -45,12 +44,12 @@ const player2 = new Character({
     idle: {
       imageSrc: './img/chainBot/idle.png',
       framesMax: 5,
-      type: 'move'
+      type: 'idle'
     },
     idleLeft: {
       imageSrc: './img/chainBot/idleLeft.png',
       framesMax: 5,
-      type: 'move'
+      type: 'idle'
     },
     run: {
       imageSrc: './img/chainBot/run.png',
@@ -80,9 +79,10 @@ const player2 = new Character({
   characterDim: {
     x: 70,
     y: 65
-  }
+  },
+  symmetricalSprite: true
 })
-*/
+
 
 const player = new Character({
   position: {
@@ -104,12 +104,12 @@ const player = new Character({
     idle: {
       imageSrc: './img/shockSweeper/static idle.png',
       framesMax: 1,
-      type: 'move'
+      type: 'idle'
     },
     idleLeft: {
       imageSrc: './img/shockSweeper/idleLeft.png',
       framesMax: 1,
-      type: 'move'
+      type: 'idle'
     },
     run: {
       imageSrc: './img/shockSweeper/shuffe(move).png',
@@ -297,7 +297,7 @@ function animate() {
   c.fillRect(0, canvas.height - 30, canvas.width, canvas.height)
   
   player.update()
-  // player2.update()
+  player2.update()
 }
 
 animate()
@@ -315,7 +315,9 @@ window.addEventListener('keydown', ({ key }) => {
       lastKey = 'd'
       break
     case 'w':
-      player.velocity.y = -25
+      if (player.sprites.jump) {
+        player.velocity.y = -25
+      }
       break
     case 'q': 
       keys.q.pressed = true 

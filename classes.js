@@ -48,17 +48,28 @@ class Sprite {
 
 
 class Character extends Sprite {
-  constructor({ position, imageSrc, framesMax, scale = 1, offset, velocity, sprites, characterDim }) {
+  constructor({ 
+    position, 
+    imageSrc, 
+    framesMax, 
+    scale = 1, 
+    offset, 
+    velocity, 
+    sprites, 
+    characterDim,
+    symmetricalSprite=false
+  }) {
     
     // position is top left. aligns with character sprite
     super({ position, imageSrc, framesMax, scale, offset })
     this.velocity = velocity 
     this.gravity = 1.5
     this.sprites = sprites
+    this.symmetricalSprite = symmetricalSprite
 
     // used to track what animation to play / override
     this.currentSprite = 'idle'
-    this.currentAnimType = 'move'
+    this.currentAnimType = 'idle'
 
     // direction character is facing
     this.direction = 'right'
@@ -87,7 +98,15 @@ class Character extends Sprite {
     // looks okay as is, but could come up with a way that
     // all the frames get run 5 times. another function is to
     // prevent other animations before attack or fall animations are complete
-    if ((this.currentAnimType === 'attack' || this.currentAnimType === 'jumpOrFall') &&
+    if (this.currentAnimType === 'jumpOrFall' &&
+      this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
+        return
+    }
+
+    
+    // attack moves / animation is only cancellabe by moving left or right
+    // abilities cannot be canclled by another ability
+    if (this.currentAnimType === 'attack' && this.sprites[sprite].type !== 'move' &&
       this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
         return
     }
@@ -130,7 +149,7 @@ class Character extends Sprite {
       this.isHorizontal ? 0 : this.framesCurrent * this.image.height / this.framesMax + 2, 
       this.isHorizontal ? this.image.width / this.framesMax : this.image.width,
       this.isHorizontal ? this.image.height : this.image.height / this.framesMax,
-      this.position.x + (this.direction === 'left' ? (this.offset.x - (this.isHorizontal ? this.image.width / this.framesMax : this.image.width) - this.width) : this.offset.x),
+      this.position.x + (this.direction === 'left' && !this.symmetricalSprite ? (this.offset.x - (this.isHorizontal ? this.image.width / this.framesMax : this.image.width) - this.width) : this.offset.x),
       // this.position.x + this.offset.x + (this.direction === 'left' && (-this.width -(this.isHorizontal ? this.image.width / this.framesMax : this.image.width))),
       this.position.y + this.offset.y,
       this.isHorizontal ? this.image.width / this.framesMax * this.scale : this.image.width * this.scale,
@@ -193,7 +212,10 @@ class Character extends Sprite {
 
 
 
-// TODO:
-// The best way to account for the sprite chaning positoins is to simply change
-// the position of the hitbox at the right frame. This white hitbox will be used for
-// collision detectyion
+// NOTE
+/*
+ * So far, the attack/movement system is decent. The only problem I have
+ * is that the last frame for each animation only runs once. I might
+ * fix this later.
+ *
+ */
