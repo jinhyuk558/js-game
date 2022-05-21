@@ -74,8 +74,14 @@ class Character extends Sprite {
   }
   switchSprite(sprite) {
 
+
+
     // if animation doesn't exist for this character, return
     if (!this.sprites[sprite]) return
+
+    
+
+   
 
     // this prevetns the last frame from being called 5 times
     // looks okay as is, but could come up with a way that
@@ -83,12 +89,19 @@ class Character extends Sprite {
     // prevent other animations before attack or fall animations are complete
     if ((this.currentAnimType === 'attack' || this.currentAnimType === 'jumpOrFall') &&
       this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
-        console.log('1', this.currentAnimType)
         return
     }
 
+    if (sprite === 'run') {
+      this.direction = 'right'
+    } else if (sprite === 'runLeft') {
+      this.direction = 'left'
+    }
+
+    
+
+
     // check if animation sprites should be drawn horizontally
-    console.log(sprite)
     if (this.sprites[sprite].isHorizontal) {
       this.isHorizontal = true
     } else {
@@ -105,7 +118,9 @@ class Character extends Sprite {
       this.image = this.sprites[sprite].image 
       this.framesMax = this.sprites[sprite].framesMax
       this.framesCurrent = 0
+      this.framesElapsed = 0
     }
+
   }
   draw() {
     c.drawImage(
@@ -115,7 +130,7 @@ class Character extends Sprite {
       this.isHorizontal ? 0 : this.framesCurrent * this.image.height / this.framesMax + 2, 
       this.isHorizontal ? this.image.width / this.framesMax : this.image.width,
       this.isHorizontal ? this.image.height : this.image.height / this.framesMax,
-      this.position.x + (this.direction === 'left' ? (this.offset.x - this.image.width - this.width) : this.offset.x),
+      this.position.x + (this.direction === 'left' ? (this.offset.x - (this.isHorizontal ? this.image.width / this.framesMax : this.image.width) - this.width) : this.offset.x),
       // this.position.x + this.offset.x + (this.direction === 'left' && (-this.width -(this.isHorizontal ? this.image.width / this.framesMax : this.image.width))),
       this.position.y + this.offset.y,
       this.isHorizontal ? this.image.width / this.framesMax * this.scale : this.image.width * this.scale,
@@ -143,18 +158,29 @@ class Character extends Sprite {
       this.sprites[this.currentSprite].animOffset.frame === this.framesCurrent &&
       this.framesElapsed === 1
     ) {
-      console.log('one')
       this.offset.x += this.sprites[this.currentSprite].animOffset.x
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
       this.shouldReposition = true
     }
-
     // if the previous animation had an animOffset, revert to original position
     if (this.prevSprite && this.sprites[this.prevSprite].animOffset && this.shouldReposition) {
-      console.log('two')
       this.offset.x -= this.sprites[this.prevSprite].animOffset.x
       // this.position.x -= this.sprites[this.prevSprite].animOffset.x
       this.shouldReposition = false
+    }
+
+    // handles cases for specific sprites that temporarily need to change offset
+    if (this.sprites[this.currentSprite].offset && this.framesElapsed === 0 && this.framesCurrent === 0) {
+      this.offset.x += this.sprites[this.currentSprite].offset.x
+      this.offset.y += this.sprites[this.currentSprite].offset.y
+      this.shouldRevertOffset = true
+      // console.log('in here')
+    }
+    // reverts the offset change after that animation is complete or skipped
+    if (this.prevSprite && this.sprites[this.prevSprite].offset && this.shouldRevertOffset) {
+      this.offset.x -= this.sprites[this.prevSprite].offset.x
+      this.offset.y -= this.sprites[this.prevSprite].offset.y
+      this.shouldRevertOffset = false
     }
 
     this.draw()

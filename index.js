@@ -24,6 +24,7 @@ const background = new Sprite({
 
 
 // player
+/*
 const player2 = new Character({
   position: {
     x: 300,
@@ -81,6 +82,7 @@ const player2 = new Character({
     y: 65
   }
 })
+*/
 
 const player = new Character({
   position: {
@@ -105,7 +107,7 @@ const player = new Character({
       type: 'move'
     },
     idleLeft: {
-      imageSrc: './img/shockSweeper/static idle.png',
+      imageSrc: './img/shockSweeper/idleLeft.png',
       framesMax: 1,
       type: 'move'
     },
@@ -125,14 +127,23 @@ const player = new Character({
       type: 'attack'
     },
     attackLeft1: {
-      imageSrc: './img/chainBot/attackLeft.png',
-      framesMax: 8,
+      imageSrc: './img/shockSweeper/slamLeft.png',
+      framesMax: 10,
       type: 'attack'
     },
     attack2: {
       imageSrc: './img/shockSweeper/Spin Slam with VFX.png',
       framesMax: 9,
       type: 'attack'
+    },
+    attackLeft2: {
+      imageSrc: './img/shockSweeper/spinSlamLeft.png',
+      framesMax: 9,
+      type: 'attack',
+      offset: {
+        x: 100,
+        y: 0
+      }
     },
     attack3: {
       imageSrc: './img/shockSweeper/Sweep with VFX.png',
@@ -145,14 +156,37 @@ const player = new Character({
       },
       type: 'attack'
     },
+    attackLeft3: {
+      imageSrc: './img/shockSweeper/sweepLeft.png',
+      framesMax: 8,
+      // handles when player sprite moves during attack animation
+      animOffset: {
+        frame: 3,
+        x: 120,
+        y: 0
+      },
+      type: 'attack'
+    },
     jump: {
       imageSrc: './img/shockSweeper/jump.png',
       framesMax: 3,
       isHorizontal: true,
       type: 'jumpOrFall'
     },
+    jumpLeft: {
+      imageSrc: './img/shockSweeper/jumpLeft.png',
+      framesMax: 3,
+      isHorizontal: true,
+      type: 'jumpOrFall'
+    },
     fall: {
       imageSrc: './img/shockSweeper/fall.png',
+      framesMax: 3,
+      isHorizontal: true,
+      type: 'jumpOrFall'
+    },
+    fallLeft: {
+      imageSrc: './img/shockSweeper/fallLeft.png',
       framesMax: 3,
       isHorizontal: true,
       type: 'jumpOrFall'
@@ -199,13 +233,15 @@ function animate() {
 
   // player movement
   if (keys.a.pressed && lastKey === 'a') {
-    player.velocity.x = -4
-    player.direction = 'left'
+    player.velocity.x = -3
+    
     player.switchSprite('runLeft')
+    // player.direction = 'left'
   } else if (keys.d.pressed && lastKey === 'd') {
-    player.velocity.x = 4
-    player.direction = 'right'
+    player.velocity.x = 3
+    
     player.switchSprite('run')
+    // player.direction = 'right'
   } else {
     player.velocity.x = 0
     if (player.direction === 'right') {
@@ -217,10 +253,17 @@ function animate() {
 
   // player jump
   if (player.velocity.y < 0) {
-    player.switchSprite('jump')
-    
+    if (player.direction === 'right') {
+      player.switchSprite('jump')
+    } else {
+      player.switchSprite('jumpLeft')
+    }
   } else if (player.velocity.y > 0) {
-    player.switchSprite('fall')
+    if (player.direction === 'right') {
+      player.switchSprite('fall')
+    } else {
+      player.switchSprite('fallLeft')
+    }
   }
 
   // player attack
@@ -231,9 +274,17 @@ function animate() {
       player.switchSprite('attackLeft1')
     }
   } else if (keys.e.pressed) {
-    player.switchSprite('attack2')
+    if (player.direction === 'right') {
+      player.switchSprite('attack2')
+    } else {
+      player.switchSprite('attackLeft2')
+    }
   } else if (keys.r.pressed) {
-    player.switchSprite('attack3')
+    if (player.direction === 'right') {
+      player.switchSprite('attack3')
+    } else {
+      player.switchSprite('attackLeft3')
+    }
   }
 
 
@@ -246,7 +297,7 @@ function animate() {
   c.fillRect(0, canvas.height - 30, canvas.width, canvas.height)
   
   player.update()
-  player2.update()
+  // player2.update()
 }
 
 animate()
