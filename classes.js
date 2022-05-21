@@ -84,15 +84,8 @@ class Character extends Sprite {
     }
   }
   switchSprite(sprite) {
-
-
-
     // if animation doesn't exist for this character, return
     if (!this.sprites[sprite]) return
-
-    
-
-   
 
     // this prevetns the last frame from being called 5 times
     // looks okay as is, but could come up with a way that
@@ -103,7 +96,6 @@ class Character extends Sprite {
         return
     }
 
-    
     // attack moves / animation is only cancellabe by moving left or right
     // abilities cannot be canclled by another ability
     if (this.currentAnimType === 'attack' && this.sprites[sprite].type !== 'move' &&
@@ -111,14 +103,12 @@ class Character extends Sprite {
         return
     }
 
+    // make sure to record direction change when sprite changes
     if (sprite === 'run') {
       this.direction = 'right'
     } else if (sprite === 'runLeft') {
       this.direction = 'left'
     }
-
-    
-
 
     // check if animation sprites should be drawn horizontally
     if (this.sprites[sprite].isHorizontal) {
@@ -128,9 +118,8 @@ class Character extends Sprite {
     }
 
     // set current sprite
-    this.prevSprite = this.currentSprite
-    this.currentSprite = sprite
-    this.currentAnimType = this.sprites[sprite].type
+    
+   
 
     // switch sprites
     if (this.image.src !== this.sprites[sprite].image.src) {
@@ -138,8 +127,17 @@ class Character extends Sprite {
       this.framesMax = this.sprites[sprite].framesMax
       this.framesCurrent = 0
       this.framesElapsed = 0
+      this.prevSprite = this.currentSprite
+      this.currentSprite = sprite
+      this.currentAnimType = this.sprites[sprite].type
+      console.log(this.prevSprite)
     }
-
+  }
+  // returns true if player would collide with rect on next frame
+  wouldCollide(rect) {
+    return (
+      this.position.x 
+    )
   }
   draw() {
     c.drawImage(
@@ -175,17 +173,19 @@ class Character extends Sprite {
     // update position if player sprite moves during ability
     if (this.sprites[this.currentSprite].animOffset && 
       this.sprites[this.currentSprite].animOffset.frame === this.framesCurrent &&
-      this.framesElapsed === 1
+      this.framesElapsed === 0
     ) {
       this.offset.x += this.sprites[this.currentSprite].animOffset.x
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
+      this.prevAnimOffset = this.sprites[this.currentSprite].animOffset
       this.shouldReposition = true
-    }
-    // if the previous animation had an animOffset, revert to original position
-    if (this.prevSprite && this.sprites[this.prevSprite].animOffset && this.shouldReposition) {
-      this.offset.x -= this.sprites[this.prevSprite].animOffset.x
+      console.log(1)
+    } else if (this.shouldReposition && this.framesCurrent === 0 && this.framesElapsed === 0) {
+      // if the previous animation had an animOffset, revert to original position
+      this.offset.x -= this.prevAnimOffset.x
       // this.position.x -= this.sprites[this.prevSprite].animOffset.x
       this.shouldReposition = false
+      console.log(2)
     }
 
     // handles cases for specific sprites that temporarily need to change offset
