@@ -183,7 +183,7 @@ class Character extends Sprite {
     } else {
       attackValid = (
         this.position.x - box.offset.x - box.width <= enemy.position.x + enemy.width &&
-        this.position.x + this.width + box.offset.x >= enemy.position.x &&
+        this.position.x + this.width - box.offset.x >= enemy.position.x &&
         this.position.y + box.offset.y + box.height >= enemy.position.y &&
         this.position.y + box.offset.y <= enemy.position.y + enemy.height
       )
@@ -199,7 +199,8 @@ class Character extends Sprite {
     if (attackValid && 
       curSprite.attackBox.attackFrames[(this.framesCurrent).toString()] && 
       this.framesElapsed === 0) {
-      enemy.health -= 15
+      
+      enemy.health = enemy.health >= 15 ? enemy.health - 15 : 0
       console.log(enemy.health)
     }
   }
@@ -273,6 +274,7 @@ class Character extends Sprite {
       this.framesElapsed === 0
     ) {
       this.offset.x += this.sprites[this.currentSprite].animOffset.x
+      // prevAnimOffset changes position
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
       this.prevAnimOffset = this.sprites[this.currentSprite].animOffset
       this.shouldReposition = true
@@ -287,16 +289,22 @@ class Character extends Sprite {
 
     // handles cases for specific sprites that temporarily need to change offset
     if (this.sprites[this.currentSprite].offset && this.framesElapsed === 0 && this.framesCurrent === 0) {
-      this.offset.x += this.sprites[this.currentSprite].offset.x
-      this.offset.y += this.sprites[this.currentSprite].offset.y
+      // in order to not create a reference
+      
+      let offsetToApply = this.sprites[this.currentSprite].offset
+      this.offset.x += offsetToApply.x
+      this.offset.y += offsetToApply.y
+      this.prevSpriteOffset = offsetToApply
       this.shouldRevertOffset = true
+      
       // console.log('in here')
-    }
-    // reverts the offset change after that animation is complete or skipped
-    if (this.prevSprite && this.sprites[this.prevSprite].offset && this.shouldRevertOffset) {
-      this.offset.x -= this.sprites[this.prevSprite].offset.x
-      this.offset.y -= this.sprites[this.prevSprite].offset.y
+    } else if (this.shouldRevertOffset && this.framesCurrent === 0 && this.framesElapsed === 0) {
+      // reverts the offset change after that animation is complete or skipped
+      // this.offset = this.prevSpriteOffset
+      this.offset.x -= this.prevSpriteOffset.x
+      this.offset.y -= this.prevSpriteOffset.y
       this.shouldRevertOffset = false
+     
     }
 
     this.draw()
