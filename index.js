@@ -24,7 +24,7 @@ const background = new Sprite({
 
 
 // player
-const player2 = new Character({
+const player = new Character({
   position: {
     x: 300,
     y: 300
@@ -64,12 +64,36 @@ const player2 = new Character({
     attack1: {
       imageSrc: './img/chainBot/attack.png',
       framesMax: 8,
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: 0,
+          y: 20
+        },
+        width: 110,
+        height: 40,
+        attackFrames: {
+          "0": true,
+          "4": true
+        }
+      }
     },
     attackLeft1: {
       imageSrc: './img/chainBot/attackLeft.png',
       framesMax: 8,
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: 0,
+          y: 20
+        },
+        width: 110,
+        height: 40,
+        attackFrames: {
+          "0": true,
+          "4": true
+        }
+      }
     },
     // charge: {
     //   imageSrc: './img/chainBot/charge.png',
@@ -84,7 +108,7 @@ const player2 = new Character({
 })
 
 
-const player = new Character({
+const player2 = new Character({
   position: {
     x: 600,
     y: 300
@@ -293,6 +317,8 @@ function animate() {
     }
   }
 
+  player.checkAttack(player2)
+  player2.checkAttack(player)
 
 
 

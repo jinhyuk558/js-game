@@ -78,17 +78,20 @@ class Character extends Sprite {
     this.width = characterDim.x
     this.height = characterDim.y
 
-    // width of small rectangle to not allow players
-    // to complete pass one another. rectangle should
-    // from center of collision box and expand based on
-    // width defined here
-    this.physicsBoxWidth = 17
+    // controls how close two characters can be before
+    // being blocked. spans 20 pixels from the center of
+    // player
+    this.physicsBoxWidth = 20
 
     for (const sprite in this.sprites) {
       this.sprites[sprite].image = new Image()
       this.sprites[sprite].image.src = this.sprites[sprite].imageSrc
     }
+
+    // max health 100 for 
+    this.health = 90
   }
+
   switchSprite(sprite) {
     // if animation doesn't exist for this character, return
     if (!this.sprites[sprite]) return
@@ -121,11 +124,7 @@ class Character extends Sprite {
       this.isHorizontal = true
     } else {
       this.isHorizontal = false
-    }
-
-    // set current sprite
-    
-   
+    }   
 
     // switch sprites
     if (this.image.src !== this.sprites[sprite].image.src) {
@@ -138,6 +137,7 @@ class Character extends Sprite {
       this.currentAnimType = this.sprites[sprite].type
     }
   }
+
   // returns true if player would collide with rect on next frame
   // using this.physicsBoxWidth
   wouldCollideWithEnemy(enemy, dir) {
@@ -147,22 +147,83 @@ class Character extends Sprite {
     if (!collidesVerticaly) return
 
     if (dir === 'right') {
-      const diff = (this.position.x + this.width / 2 + 10 + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
+      const diff = (this.position.x + this.width / 2 + this.physicsBoxWidth + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
      
       if (diff >= 0 && diff <= this.velocity.x) {
-        this.position.x -= this.velocity.x
+        this.position.x -= this.velocity.x + 5 // +5 here is kind of a "hacky" way to make sure they don't pass
         return true
       }
     } else if (dir === 'left') {
-      const diff = ((enemy.position.x + enemy.width / 2 + 10) - (this.position.x + this.width / 2 - 10 + this.velocity.x))
+      const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth + this.velocity.x))
         if (diff >= 0 && diff < Math.abs(this.velocity.x)) {
-          this.position.x -= this.velocity.x
+          this.position.x -= this.velocity.x - 5
           return true
         }
     }
     return false
   }
+
+  // checks if attack box collides with enemy
+  checkAttack(enemy) {
+    if (this.sprites[this.currentSprite].type !== 'attack') return
+
+    let curSprite = this.sprites[this.currentSprite]
+    let box = curSprite.attackBox
+
+    let attackValid = false
+
+    // check if attackBox collides with enemy
+    if (this.direction === 'right') {
+      attackValid = (
+        this.position.x + this.width + box.offset.x + box.width >= enemy.position.x &&
+        this.position.x + this.width + box.offset.x <= enemy.position.x + enemy.width &&
+        this.position.y + box.offset.y + box.height >= enemy.position.y &&
+        this.position.y + box.offset.y <= enemy.position.y + enemy.height
+      )
+    } else {
+      attackValid = (
+        this.position.x - box.offset.x - box.width <= enemy.position.x + enemy.width &&
+        this.position.x + this.width + box.offset.x >= enemy.position.x &&
+        this.position.y + box.offset.y + box.height >= enemy.position.y &&
+        this.position.y + box.offset.y <= enemy.position.y + enemy.height
+      )
+    }
+
+    // if (this.direction === 'right') {
+    //   c.fillRect(this.position.x + this.width + box.offset.x, this.position.y + box.offset.y, box.width, box.height)
+    // } else {
+    //   c.fillRect(this.position.x - box.width - box.offset.x, this.position.y + box.offset.y, box.width, box.height)
+    // }
+
+    // if current frame during attack animation should apply attack
+    if (attackValid && 
+      curSprite.attackBox.attackFrames[(this.framesCurrent).toString()] && 
+      this.framesElapsed === 0) {
+      enemy.health -= 15
+      console.log(enemy.health)
+    }
+  }
+
   draw() {
+    // draw healthbox
+    let barWidth = 80
+    let healthWidth = barWidth * this.health / 100
+    c.fillStyle = '#ef4444'
+    c.fillRect(
+      this.position.x,
+      this.position.y - 25,
+      barWidth,
+      12
+    )
+    c.fillStyle = 'green'
+    c.fillRect(
+      this.position.x,
+      this.position.y - 25,
+      healthWidth,
+      12
+    )
+    
+    // draw character
     c.drawImage(
       this.image,
       this.isHorizontal ? this.framesCurrent * this.image.width / this.framesMax : 0,
@@ -177,10 +238,23 @@ class Character extends Sprite {
       this.isHorizontal ? this.image.height * this.scale : this.image.height / this.framesMax * this.scale
     )
   }
+
   update() {
     // visualize collision rectangle
     c.fillStyle = 'rgba(255,255,255,0.1)'
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
+
+    // visualize attack box
+    if (this.sprites[this.currentSprite].attackBox) {
+      let box = this.sprites[this.currentSprite].attackBox
+      c.fillStyle = 'rgba(255,255,255,0.3)'
+      if (this.direction === 'right') {
+        c.fillRect(this.position.x + this.width + box.offset.x, this.position.y + box.offset.y, box.width, box.height)
+      } else {
+        c.fillRect(this.position.x - box.width - box.offset.x, this.position.y + box.offset.y, box.width, box.height)
+      }
+      
+    }
   
     this.position.x += this.velocity.x 
     this.position.y += this.velocity.y
