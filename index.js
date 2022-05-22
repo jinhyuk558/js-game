@@ -24,7 +24,7 @@ const background = new Sprite({
 
 
 // player
-const player = new Character({
+const player2 = new Character({
   position: {
     x: 300,
     y: 300
@@ -108,7 +108,7 @@ const player = new Character({
 })
 
 
-const player2 = new Character({
+const player = new Character({
   position: {
     x: 600,
     y: 300
@@ -148,17 +148,50 @@ const player2 = new Character({
     attack1: {
       imageSrc: './img/shockSweeper/slam with VFX.png',
       framesMax: 10,
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: 0,
+          y: 0
+        },
+        width: 110,
+        height: 70,
+        attackFrames: {
+          "5": true
+        },
+      }
     },
     attackLeft1: {
       imageSrc: './img/shockSweeper/slamLeft.png',
       framesMax: 10,
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: 0,
+          y: 0
+        },
+        width: 110,
+        height: 70,
+        attackFrames: {
+          "5": true
+        },
+      }
     },
     attack2: {
       imageSrc: './img/shockSweeper/Spin Slam with VFX.png',
       framesMax: 9,
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: -65,
+          y: 0
+        },
+        width: 125,
+        height: 65,
+        attackFrames: {
+          "5": true
+        },
+      }
     },
     attackLeft2: {
       imageSrc: './img/shockSweeper/spinSlamLeft.png',
@@ -167,6 +200,17 @@ const player2 = new Character({
       offset: {
         x: 100,
         y: 0
+      },
+      attackBox: {
+        offset: {
+          x: -65,
+          y: 0
+        },
+        width: 125,
+        height: 65,
+        attackFrames: {
+          "5": true
+        },
       }
     },
     attack3: {
@@ -178,7 +222,18 @@ const player2 = new Character({
         x: -120,
         y: 0
       },
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: -125,
+          y: 0
+        },
+        width: 220,
+        height: 65,
+        attackFrames: {
+          "4": true
+        },
+      }
     },
     attackLeft3: {
       imageSrc: './img/shockSweeper/sweepLeft.png',
@@ -189,7 +244,18 @@ const player2 = new Character({
         x: 120,
         y: 0
       },
-      type: 'attack'
+      type: 'attack',
+      attackBox: {
+        offset: {
+          x: -125,
+          y: 0
+        },
+        width: 220,
+        height: 65,
+        attackFrames: {
+          "4": true
+        },
+      }
     },
     jump: {
       imageSrc: './img/shockSweeper/jump.png',
