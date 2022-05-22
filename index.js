@@ -362,6 +362,12 @@ function animate() {
     }
   }
 
+  if (player.wouldCollideEnemyVertically(player2)) {
+    player.vertCollision = true
+  } else {
+    player.vertCollision = false
+  }
+
   // player attack
   if (keys.q.pressed) {
     if (player.direction === 'right') {

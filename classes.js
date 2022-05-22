@@ -83,6 +83,9 @@ class Character extends Sprite {
     // player
     this.physicsBoxWidth = 20
 
+    // only used to check if player collides with another character. nothing else
+    this.vertCollision = false
+
     for (const sprite in this.sprites) {
       this.sprites[sprite].image = new Image()
       this.sprites[sprite].image.src = this.sprites[sprite].imageSrc
@@ -139,12 +142,15 @@ class Character extends Sprite {
   }
 
   // returns true if player would collide with rect on next frame
-  // using this.physicsBoxWidth
+  // using this.physicsBoxWidth. check horizontally
   wouldCollideWithEnemy(enemy, dir) {
-    let collidesVerticaly = (
+
+    let alignsVertically = (
       this.position.y + this.height >= enemy.position.y && this.position.y < enemy.position.y + enemy.height
     )
-    if (!collidesVerticaly) return
+    if (!alignsVertically) return false
+
+ 
 
     if (dir === 'right') {
       const diff = (this.position.x + this.width / 2 + this.physicsBoxWidth + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
@@ -160,8 +166,27 @@ class Character extends Sprite {
           return true
         }
     }
+
     return false
   }
+
+  wouldCollideEnemyVertically(enemy) {
+    // console.log('first')
+    if (this.velocity.y !== 0) {
+      if (this.position.y + this.height + this.velocity.y >= enemy.position.y && 
+        this.position.y + this.velocity.y < enemy.position.y + enemy.height) {
+          // console.log('second')
+        let centerDiff = Math.abs(this.position.x + this.width / 2 - (enemy.position.x + enemy.width / 2))
+        // console.log('centerDiff: ', this.position.x + this.width / 2 - (enemy.position.x + enemy.width / 2))
+        if (centerDiff < this.physicsBoxWidth * 2) {
+          this.velocity.y = 0
+          console.log('returning true')
+          return true
+        }
+      }
+    }
+    return false
+  } 
 
   // checks if attack box collides with enemy
   checkAttack(enemy) {
@@ -260,12 +285,18 @@ class Character extends Sprite {
     this.position.x += this.velocity.x 
     this.position.y += this.velocity.y
 
-    if (this.position.y + this.velocity.y + this.height >= canvas.height - 30) {
-      this.velocity.y = 0
-      this.position.y = canvas.height - 30 - this.height
-    } else {
-      this.velocity.y += this.gravity
+    
+    if (!this.vertCollision) {
+      // apply gravity 
+      if (this.position.y + this.velocity.y + this.height >= canvas.height - 30) {
+        this.velocity.y = 0
+        this.position.y = canvas.height - 30 - this.height
+      } else {
+        this.velocity.y += this.gravity
+      }
+      
     }
+    
 
     
     // update position if player sprite moves during ability
@@ -278,13 +309,13 @@ class Character extends Sprite {
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
       this.prevAnimOffset = this.sprites[this.currentSprite].animOffset
       this.shouldReposition = true
-      console.log(1)
+      // console.log(1)
     } else if (this.shouldReposition && this.framesCurrent === 0 && this.framesElapsed === 0) {
       // if the previous animation had an animOffset, revert to original position
       this.offset.x -= this.prevAnimOffset.x
       // this.position.x -= this.sprites[this.prevSprite].animOffset.x
       this.shouldReposition = false
-      console.log(2)
+      // console.log(2)
     }
 
     // handles cases for specific sprites that temporarily need to change offset
