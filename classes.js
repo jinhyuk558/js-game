@@ -93,26 +93,42 @@ class Character extends Sprite {
 
     // max health 100 for 
     this.health = 90
+    this.isDead = false
   }
 
   switchSprite(sprite) {
+
+
+    if (this.currentAnimType === 'death') return
+
     // if animation doesn't exist for this character, return
     if (!this.sprites[sprite]) return
 
-    // this prevetns the last frame from being called 5 times
-    // looks okay as is, but could come up with a way that
-    // all the frames get run 5 times. another function is to
-    // prevent other animations before attack or fall animations are complete
+   
+    // prevents jumpOrFall animation from being cancelled
+    // regarding the third conditional, this is a "hacky" way to tell that
+    // we're still running the jumpOrFall animation. when an animation changes,
+    // framesElapsed will be set to 1 and not zero. therefore, if we're at frame 0
+    // and framesElapsed is 1, we know that we're on a new animation
     if (this.currentAnimType === 'jumpOrFall' &&
-      this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
+      this.framesCurrent < this.sprites[this.currentSprite].framesMax && (this.framesCurrent === 0 ? (this.framesElapsed !== 0): true)) {
         return
     }
 
     // attack moves / animation is only cancellabe by moving left or right
     // abilities cannot be canclled by another ability
     if (this.currentAnimType === 'attack' && this.sprites[sprite].type !== 'move' &&
-      this.framesCurrent < this.sprites[this.currentSprite].framesMax - 1) {
+      this.framesCurrent < this.sprites[this.currentSprite].framesMax && (this.framesCurrent === 0 ? (this.framesElapsed !== 0): true)) {
+        console.log(this.currentSprite)
         return
+    }
+
+    // when taking a hit will override idle and movement animations. cannot override
+    // attack animations, however
+    if (this.currentAnimType === 'takeHit' && this.sprites[sprite].type !== 'attack'&&
+    this.framesCurrent < this.sprites[this.currentSprite].framesMax  && (this.framesCurrent === 0 ? (this.framesElapsed !== 0): true)
+      ) {
+      return 
     }
 
     // make sure to record direction change when sprite changes
@@ -134,7 +150,7 @@ class Character extends Sprite {
       this.image = this.sprites[sprite].image 
       this.framesMax = this.sprites[sprite].framesMax
       this.framesCurrent = 0
-      this.framesElapsed = 0
+      this.framesElapsed = 1
       this.prevSprite = this.currentSprite
       this.currentSprite = sprite
       this.currentAnimType = this.sprites[sprite].type
@@ -226,7 +242,8 @@ class Character extends Sprite {
       this.framesElapsed === 0) {
       
       enemy.health = enemy.health >= 15 ? enemy.health - 15 : 0
-      console.log(enemy.health)
+      console.log('here')
+      enemy.switchSprite('takeHit')
     }
   }
 
@@ -279,6 +296,21 @@ class Character extends Sprite {
       } else {
         c.fillRect(this.position.x - box.width - box.offset.x, this.position.y + box.offset.y, box.width, box.height)
       }
+    }
+
+    // detects first time character is dead
+    if (this.health === 0) {
+      this.switchSprite('death')
+    }
+    if (!this.isDead && this.health === 0 && this.framesCurrent === this.sprites.death.framesMax-1 && this.framesElapsed === 0) {
+      this.isDead = true
+      const dh = this.sprites.death.deathHeight
+      this.offset.y -= (this.height - dh)
+      this.position.y += (this.height - dh)
+      this.height = dh
+      
+      
+      
       
     }
   
@@ -302,15 +334,14 @@ class Character extends Sprite {
     // update position if player sprite moves during ability
     if (this.sprites[this.currentSprite].animOffset && 
       this.sprites[this.currentSprite].animOffset.frame === this.framesCurrent &&
-      this.framesElapsed === 0
+      (this.framesCurrent === 0 ? this.framesElapsed === 1 : this.framesElapsed === 0)
     ) {
       this.offset.x += this.sprites[this.currentSprite].animOffset.x
       // prevAnimOffset changes position
       this.position.x -= this.sprites[this.currentSprite].animOffset.x
       this.prevAnimOffset = this.sprites[this.currentSprite].animOffset
       this.shouldReposition = true
-      // console.log(1)
-    } else if (this.shouldReposition && this.framesCurrent === 0 && this.framesElapsed === 0) {
+    } else if (this.shouldReposition && this.framesCurrent === 0 && this.framesElapsed === 1) {
       // if the previous animation had an animOffset, revert to original position
       this.offset.x -= this.prevAnimOffset.x
       // this.position.x -= this.sprites[this.prevSprite].animOffset.x
@@ -319,7 +350,9 @@ class Character extends Sprite {
     }
 
     // handles cases for specific sprites that temporarily need to change offset
-    if (this.sprites[this.currentSprite].offset && this.framesElapsed === 0 && this.framesCurrent === 0) {
+    // reason for checking framesElasped === 1 is because we're setting framesElapsed = 1 when
+    // switching sprites
+    if (this.sprites[this.currentSprite].offset && this.framesElapsed === 1 && this.framesCurrent === 0) {
       // in order to not create a reference
       
       let offsetToApply = this.sprites[this.currentSprite].offset
@@ -329,7 +362,7 @@ class Character extends Sprite {
       this.shouldRevertOffset = true
       
       // console.log('in here')
-    } else if (this.shouldRevertOffset && this.framesCurrent === 0 && this.framesElapsed === 0) {
+    } else if (this.shouldRevertOffset && this.framesCurrent === 0 && this.framesElapsed === 1) {
       // reverts the offset change after that animation is complete or skipped
       // this.offset = this.prevSpriteOffset
       this.offset.x -= this.prevSpriteOffset.x
@@ -339,7 +372,10 @@ class Character extends Sprite {
     }
 
     this.draw()
-    this.animateFrames()
+    if (!this.isDead) {
+      this.animateFrames()
+    }
+    
     
 
   }

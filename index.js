@@ -95,6 +95,17 @@ const player2 = new Character({
         }
       }
     },
+    takeHit: {
+      imageSrc: './img/chainBot/hit.png',
+      framesMax: 2,
+      type: 'takeHit',
+    },
+    death: {
+      imageSrc: './img/chainBot/death.png',
+      framesMax: 5,
+      type: 'death',
+      deathHeight: 25
+    }
     // charge: {
     //   imageSrc: './img/chainBot/charge.png',
     //   framesMax: 
@@ -281,6 +292,12 @@ const player = new Character({
       isHorizontal: true,
       type: 'jumpOrFall'
     },
+    death: {
+      imageSrc: './img/shockSweeper/death.png',
+      framesMax: 5,
+      type: 'death',
+      deathHeight: 10
+    }
     // charge: {
     //   imageSrc: './img/chainBot/charge.png',
     //   framesMax: 
@@ -288,7 +305,7 @@ const player = new Character({
   },
   characterDim: {
     x: 50,
-    y: 65
+    y: 60
   }
 })
 
@@ -310,10 +327,32 @@ const keys = {
   },
   r: {
     pressed: false
+  },
+
+  "1": {
+    pressed: false
+  },
+  "3": {
+    pressed: false 
+  },
+  "5": {
+    pressed: false
+  },
+  "4": {
+    pressed: false
+  },
+  "6": {
+    pressed: false
+  },
+  "2": {
+    pressed: false
   }
+
+
 }
 
 let lastKey
+let lastKeyEnemy
 
 
 function animate() {
@@ -321,74 +360,160 @@ function animate() {
   c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
 
-  // player movement
-  if (keys.a.pressed && lastKey === 'a') {
-    if (!player.wouldCollideWithEnemy(player2, 'left')) {
-      player.velocity.x = -3
-      player.switchSprite('runLeft')
+  if (!player.isDead) {
+    // player movement
+    if (keys.a.pressed && lastKey === 'a') {
+      if (!player.wouldCollideWithEnemy(player2, 'left')) {
+        player.velocity.x = -3
+        player.switchSprite('runLeft')
+      } else {
+        player.velocity.x = 0
+      }
+      // player.direction = 'left'
+    } else if (keys.d.pressed && lastKey === 'd') {
+      if (!player.wouldCollideWithEnemy(player2, 'right')) {
+        player.velocity.x = 3
+        player.switchSprite('run') 
+      } else {
+        player.velocity.x = 0
+      }
+      // player.direction = 'right'
     } else {
       player.velocity.x = 0
+      if (player.direction === 'right') {
+        player.switchSprite('idle')
+      } else {
+        player.switchSprite('idleLeft')
+      }
     }
-    // player.direction = 'left'
-  } else if (keys.d.pressed && lastKey === 'd') {
-    if (!player.wouldCollideWithEnemy(player2, 'right')) {
-      player.velocity.x = 3
-      player.switchSprite('run') 
+
+    // player jump
+    if (player.velocity.y < 0) {
+      if (player.direction === 'right') {
+        player.switchSprite('jump')
+      } else {
+        player.switchSprite('jumpLeft')
+      }
+    } else if (player.velocity.y > 0) {
+      if (player.direction === 'right') {
+        player.switchSprite('fall')
+      } else {
+        player.switchSprite('fallLeft')
+      }
+    }
+
+    if (player.wouldCollideEnemyVertically(player2)) {
+      player.vertCollision = true
     } else {
-      player.velocity.x = 0
+      player.vertCollision = false
     }
-    // player.direction = 'right'
-  } else {
-    player.velocity.x = 0
-    if (player.direction === 'right') {
-      player.switchSprite('idle')
-    } else {
-      player.switchSprite('idleLeft')
+
+    // player attack
+    if (keys.q.pressed) {
+      if (player.direction === 'right') {
+        player.switchSprite('attack1')
+      } else {
+        player.switchSprite('attackLeft1')
+      }
+    } else if (keys.e.pressed) {
+      if (player.direction === 'right') {
+        player.switchSprite('attack2')
+      } else {
+        player.switchSprite('attackLeft2')
+      }
+    } else if (keys.r.pressed) {
+      if (player.direction === 'right') {
+        player.switchSprite('attack3')
+      } else {
+        player.switchSprite('attackLeft3')
+      }
     }
+
   }
 
-  // player jump
-  if (player.velocity.y < 0) {
-    if (player.direction === 'right') {
-      player.switchSprite('jump')
+
+  if (!player2.isDead) {
+    // player2 movement
+    if (keys["1"].pressed && lastKeyEnemy === "1") {
+      if (!player2.wouldCollideWithEnemy(player, 'left')) {
+        player2.velocity.x = -3
+        player2.switchSprite('runLeft')
+      } else {
+        player2.velocity.x = 0
+      }
+      // player2.direction = 'left'
+    } else if (keys["3"].pressed && lastKeyEnemy === "3") {
+      if (!player2.wouldCollideWithEnemy(player, 'right')) {
+        player2.velocity.x = 3
+        player2.switchSprite('run') 
+      } else {
+        player2.velocity.x = 0
+      }
+      // player2.direction = 'right'
     } else {
-      player.switchSprite('jumpLeft')
+      player2.velocity.x = 0
+      if (player2.direction === 'right') {
+        player2.switchSprite('idle')
+      } else {
+        player2.switchSprite('idleLeft')
+      }
     }
-  } else if (player.velocity.y > 0) {
-    if (player.direction === 'right') {
-      player.switchSprite('fall')
+
+    // player2 jump
+    if (player2.velocity.y < 0) {
+      if (player2.direction === 'right') {
+        player2.switchSprite('jump')
+      } else {
+        player2.switchSprite('jumpLeft')
+      }
+    } else if (player2.velocity.y > 0) {
+      if (player2.direction === 'right') {
+        player2.switchSprite('fall')
+      } else {
+        player2.switchSprite('fallLeft')
+      }
+    }
+
+    if (player2.wouldCollideEnemyVertically(player)) {
+      player2.vertCollision = true
     } else {
-      player.switchSprite('fallLeft')
+      player2.vertCollision = false
     }
+
+    // player2 attack
+    if (keys["2"].pressed) {
+      if (player2.direction === 'right') {
+        player2.switchSprite('attack1')
+      } else {
+        player2.switchSprite('attackLeft1')
+      }
+    } else if (keys["4"].pressed) {
+      if (player2.direction === 'right') {
+        player2.switchSprite('attack2')
+      } else {
+        player2.switchSprite('attackLeft2')
+      }
+    } else if (keys["6"].pressed) {
+      if (player2.direction === 'right') {
+        player2.switchSprite('attack3')
+      } else {
+        player2.switchSprite('attackLeft3')
+      }
+    }
+
   }
 
-  if (player.wouldCollideEnemyVertically(player2)) {
-    player.vertCollision = true
-  } else {
-    player.vertCollision = false
-  }
 
-  // player attack
-  if (keys.q.pressed) {
-    if (player.direction === 'right') {
-      player.switchSprite('attack1')
-    } else {
-      player.switchSprite('attackLeft1')
-    }
-  } else if (keys.e.pressed) {
-    if (player.direction === 'right') {
-      player.switchSprite('attack2')
-    } else {
-      player.switchSprite('attackLeft2')
-    }
-  } else if (keys.r.pressed) {
-    if (player.direction === 'right') {
-      player.switchSprite('attack3')
-    } else {
-      player.switchSprite('attackLeft3')
-    }
-  }
 
+
+
+
+
+
+
+
+
+  
   player.checkAttack(player2)
   player2.checkAttack(player)
 
@@ -419,7 +544,7 @@ window.addEventListener('keydown', ({ key }) => {
       lastKey = 'd'
       break
     case 'w':
-      if (player.sprites.jump) {
+      if (player.sprites.jump && !player.isDead) {
         player.velocity.y = -25
       }
       break
@@ -434,6 +559,34 @@ window.addEventListener('keydown', ({ key }) => {
     case 'r':
       keys.r.pressed = true 
       lastKey = 'r'
+      break
+  }
+
+  switch(key) {
+    case '1':
+      keys["1"].pressed = true 
+      lastKeyEnemy = '1'
+      break
+    case '3':
+      keys["3"].pressed = true 
+      lastKeyEnemy = '3'
+      break
+    case '5':
+      if (player2.sprites.jump && !player2.isDead) {
+        player2.velocity.y = -25
+      }
+      break
+    case '4': 
+      keys["4"].pressed = true 
+      lastKeyEnemy = '4'
+      break
+    case '6':
+      keys["6"].pressed = true 
+      lastKeyEnemy = '6'
+      break
+    case '2':
+      keys["2"].pressed = true 
+      lastKeyEnemy = '2'
       break
   }
 })
@@ -457,6 +610,23 @@ window.addEventListener('keyup', ({ key }) => {
       break
     case 'r':
       keys.r.pressed = false
+      break
+  }
+  switch(key) {
+    case '1':
+      keys["1"].pressed = false 
+      break
+    case '3':
+      keys["3"].pressed = false 
+      break
+    case '4': 
+      keys["4"].pressed = false
+      break
+    case '6':
+      keys["6"].pressed = false
+      break
+    case '2':
+      keys["2"].pressed = false
       break
   }
 })
