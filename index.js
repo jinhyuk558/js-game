@@ -303,6 +303,12 @@ const player2 = new Character({
       type: 'death',
       deathHeight: 10
     },
+    deathLeft: {
+      imageSrc: './img/shockSweeper/deathLeft.png',
+      framesMax: 5,
+      type: 'death',
+      deathHeight: 10
+    },
     takeHit: {
       imageSrc: './img/shockSweeper/hit.png',
       framesMax: 2,

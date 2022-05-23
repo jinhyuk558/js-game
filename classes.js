@@ -166,21 +166,33 @@ class Character extends Sprite {
     if (!alignsVertically) return false
 
  
-
-    if (dir === 'right') {
-      const diff = (this.position.x + this.width / 2 + this.physicsBoxWidth + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
-     
-      if (diff >= 0 && diff <= this.velocity.x) {
-        this.position.x -= this.velocity.x + 5 // +5 here is kind of a "hacky" way to make sure they don't pass
+    // console.log(this.velocity.x)
+    if (dir === 'right' && this.position.x < enemy.position.x) {
+      const diff =  (this.position.x + this.width / 2 + this.physicsBoxWidth + 3) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
+      if (diff >= 0 && this.position.x < enemy.position.x + enemy.width) {
         return true
       }
-    } else if (dir === 'left') {
-      const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth + this.velocity.x))
-        if (diff >= 0 && diff < Math.abs(this.velocity.x)) {
-          this.position.x -= this.velocity.x - 5
-          return true
-        }
+    } else if (dir === 'left' && this.position.x > enemy.position.x) {
+      const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth - 3))
+      if (diff >= 0 && enemy.position.x < this.position.x + this.width) {
+        
+        return true
+      }
     }
+    // if (dir === 'right') {
+    //   const diff = (this.position.x + this.width / 2 + this.physicsBoxWidth + this.velocity.x) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
+     
+    //   if (diff >= 0 && diff <= this.velocity.x) {
+    //     this.position.x -= this.velocity.x + 5 // +5 here is kind of a "hacky" way to make sure they don't pass
+    //     return true
+    //   }
+    // } else if (dir === 'left') {
+    //   const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth + this.velocity.x))
+    //     if (diff >= 0 && diff < Math.abs(this.velocity.x)) {
+    //       this.position.x -= this.velocity.x - 5
+    //       return true
+    //     }
+    // }
 
     return false
   }
@@ -303,7 +315,13 @@ class Character extends Sprite {
 
     // detects first time character is dead
     if (this.health === 0) {
-      this.switchSprite('death')
+      // some characters don't need deathLeft animation
+      if (this.direction === 'left' && this.sprites.deathLeft) {
+        this.switchSprite('deathLeft')
+      } else {
+        this.switchSprite('death')
+      }
+      
     }
     if (!this.isDead && this.health === 0 && this.framesCurrent === this.sprites.death.framesMax-1 && this.framesElapsed === 0) {
       this.isDead = true
