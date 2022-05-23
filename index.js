@@ -31,13 +31,13 @@ const player = new Character({
   },
   imageSrc: './img/chainBot/idle.png',
   framesMax: 5,
-  scale: 3,
+  scale: 3.5,
   velocity: {
     x: 0,
     y: 0
   },
   offset: {
-    x: -160,
+    x: -195,
     y: -25
   },
   sprites: {
@@ -54,7 +54,7 @@ const player = new Character({
     run: {
       imageSrc: './img/chainBot/run.png',
       framesMax: 8,
-      type: 'move'
+      type: 'move',
     },
     runLeft: {
       imageSrc: './img/chainBot/runLeft.png',
@@ -67,16 +67,17 @@ const player = new Character({
       type: 'attack',
       attackBox: {
         offset: {
-          x: 0,
+          x: 5,
           y: 20
         },
-        width: 110,
-        height: 40,
+        width: 115,
+        height: 50,
         attackFrames: {
           "0": true,
           "4": true
         }
-      }
+      },
+      dmg: 10
     },
     attackLeft1: {
       imageSrc: './img/chainBot/attackLeft.png',
@@ -93,7 +94,8 @@ const player = new Character({
           "0": true,
           "4": true
         }
-      }
+      },
+      dmg: 10
     },
     takeHit: {
       imageSrc: './img/chainBot/hit.png',
@@ -117,10 +119,11 @@ const player = new Character({
     // }
   },
   characterDim: {
-    x: 70,
-    y: 65
+    x: 65,
+    y: 75
   },
-  symmetricalSprite: true
+  symmetricalSprite: true,
+  speed: 2
 })
 
 
@@ -175,7 +178,8 @@ const player2 = new Character({
         attackFrames: {
           "5": true
         },
-      }
+      },
+      dmg: 25
     },
     attackLeft1: {
       imageSrc: './img/shockSweeper/slamLeft.png',
@@ -191,7 +195,8 @@ const player2 = new Character({
         attackFrames: {
           "5": true
         },
-      }
+      },
+      dmg: 25
     },
     attack2: {
       imageSrc: './img/shockSweeper/Spin Slam with VFX.png',
@@ -207,7 +212,8 @@ const player2 = new Character({
         attackFrames: {
           "5": true
         },
-      }
+      },
+      dmg: 15
     },
     attackLeft2: {
       imageSrc: './img/shockSweeper/spinSlamLeft.png',
@@ -227,7 +233,8 @@ const player2 = new Character({
         attackFrames: {
           "5": true
         },
-      }
+      },
+      dmg: 15
     },
     attack3: {
       imageSrc: './img/shockSweeper/Sweep with VFX.png',
@@ -249,7 +256,8 @@ const player2 = new Character({
         attackFrames: {
           "4": true
         },
-      }
+      },
+      dmg: 20
     },
     attackLeft3: {
       imageSrc: './img/shockSweeper/sweepLeft.png',
@@ -271,7 +279,8 @@ const player2 = new Character({
         attackFrames: {
           "4": true
         },
-      }
+      },
+      dmg: 20
     },
     jump: {
       imageSrc: './img/shockSweeper/jump.png',
@@ -327,7 +336,8 @@ const player2 = new Character({
   characterDim: {
     x: 50,
     y: 60
-  }
+  },
+  speed: 1.5
 })
 
 const keys = {
@@ -378,14 +388,14 @@ let lastKeyEnemy
 
 function animate() {
   window.requestAnimationFrame(animate)
-  c.fillStyle = 'black'
+  c.fillStyle = 'white'
   c.fillRect(0, 0, canvas.width, canvas.height)
 
   if (!player.isDead) {
     // player movement
     if (keys.a.pressed && lastKey === 'a') {
       if (!player.wouldCollideWithEnemy(player2, 'left')) {
-        player.velocity.x = -3
+        player.velocity.x = -player.speed
         player.switchSprite('runLeft')
       } else {
         player.velocity.x = 0
@@ -393,7 +403,7 @@ function animate() {
       // player.direction = 'left'
     } else if (keys.d.pressed && lastKey === 'd') {
       if (!player.wouldCollideWithEnemy(player2, 'right')) {
-        player.velocity.x = 3
+        player.velocity.x = player.speed
         player.switchSprite('run') 
       } else {
         player.velocity.x = 0
@@ -457,7 +467,7 @@ function animate() {
     // player2 movement
     if (keys["1"].pressed && lastKeyEnemy === "1") {
       if (!player2.wouldCollideWithEnemy(player, 'left')) {
-        player2.velocity.x = -3
+        player2.velocity.x = -player2.speed
         player2.switchSprite('runLeft')
       } else {
         player2.velocity.x = 0
@@ -465,7 +475,7 @@ function animate() {
       // player2.direction = 'left'
     } else if (keys["3"].pressed && lastKeyEnemy === "3") {
       if (!player2.wouldCollideWithEnemy(player, 'right')) {
-        player2.velocity.x = 3
+        player2.velocity.x = player2.speed
         player2.switchSprite('run') 
       } else {
         player2.velocity.x = 0
@@ -540,7 +550,7 @@ function animate() {
 
 
 
-  background.update()
+  // background.update()
 
   // draw ground 
   c.fillStyle = 'black'
@@ -566,7 +576,7 @@ window.addEventListener('keydown', ({ key }) => {
       break
     case 'w':
       if (player.sprites.jump && !player.isDead) {
-        player.velocity.y = -25
+        player.velocity.y = -30
       }
       break
     case 'q': 

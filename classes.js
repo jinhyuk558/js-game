@@ -57,7 +57,8 @@ class Character extends Sprite {
     velocity, 
     sprites, 
     characterDim,
-    symmetricalSprite=false
+    symmetricalSprite=false,
+    speed = 3
   }) {
     
     // position is top left. aligns with character sprite
@@ -94,6 +95,9 @@ class Character extends Sprite {
     // max health 100 for 
     this.health = 90
     this.isDead = false
+
+    this.speed = speed
+    this.attackDmg = 0
   }
 
   switchSprite(sprite) {
@@ -146,13 +150,17 @@ class Character extends Sprite {
 
     // switch sprites
     if (this.image.src !== this.sprites[sprite].image.src) {
-      this.image = this.sprites[sprite].image 
-      this.framesMax = this.sprites[sprite].framesMax
+      const newSprite = this.sprites[sprite]
+      this.image = newSprite.image 
+      this.framesMax = newSprite.framesMax
       this.framesCurrent = 0
       this.framesElapsed = 1
       this.prevSprite = this.currentSprite
       this.currentSprite = sprite
-      this.currentAnimType = this.sprites[sprite].type
+      this.currentAnimType = newSprite.type
+      if (newSprite.type === 'attack') {
+        this.attackDmg = newSprite.dmg
+      }
     }
   }
 
@@ -168,12 +176,12 @@ class Character extends Sprite {
  
     // console.log(this.velocity.x)
     if (dir === 'right' && this.position.x < enemy.position.x) {
-      const diff =  (this.position.x + this.width / 2 + this.physicsBoxWidth + 3) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
+      const diff =  (this.position.x + this.width / 2 + this.physicsBoxWidth + this.speed) - (enemy.position.x + enemy.width / 2 - enemy.physicsBoxWidth)
       if (diff >= 0 && this.position.x < enemy.position.x + enemy.width) {
         return true
       }
     } else if (dir === 'left' && this.position.x > enemy.position.x) {
-      const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth - 3))
+      const diff = ((enemy.position.x + enemy.width / 2 + this.physicsBoxWidth) - (this.position.x + this.width / 2 - this.physicsBoxWidth - this.speed))
       if (diff >= 0 && enemy.position.x < this.position.x + this.width) {
         
         return true
@@ -252,7 +260,7 @@ class Character extends Sprite {
       curSprite.attackBox.attackFrames[(this.framesCurrent).toString()] && 
       this.framesElapsed === 1) {
       
-      enemy.health = enemy.health >= 15 ? enemy.health - 15 : 0
+      enemy.health = enemy.health >= this.attackDmg ? enemy.health - this.attackDmg : 0
       console.log('here')
       if (enemy.direction === 'right') {
         enemy.switchSprite('takeHit')
@@ -299,13 +307,13 @@ class Character extends Sprite {
 
   update() {
     // visualize collision rectangle
-    c.fillStyle = 'rgba(255,255,255,0.1)'
-    c.fillRect(this.position.x, this.position.y, this.width, this.height)
+    c.fillStyle = 'rgba(0,0,0,0.1)'
+    // c.fillRect(this.position.x, this.position.y, this.width, this.height)
 
     // visualize attack box
     if (this.sprites[this.currentSprite].attackBox) {
       let box = this.sprites[this.currentSprite].attackBox
-      c.fillStyle = 'rgba(255,255,255,0.3)'
+      c.fillStyle = 'rgba(0,0,0,0.3)'
       if (this.direction === 'right') {
         c.fillRect(this.position.x + this.width + box.offset.x, this.position.y + box.offset.y, box.width, box.height)
       } else {
@@ -321,6 +329,7 @@ class Character extends Sprite {
       } else {
         this.switchSprite('death')
       }
+      this.velocity.x = 0
       
     }
     if (!this.isDead && this.health === 0 && this.framesCurrent === this.sprites.death.framesMax-1 && this.framesElapsed === 0) {
