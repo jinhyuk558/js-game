@@ -24,7 +24,7 @@ const background = new Sprite({
 
 
 // player
-const player2 = new Character({
+const player = new Character({
   position: {
     x: 300,
     y: 300
@@ -100,6 +100,11 @@ const player2 = new Character({
       framesMax: 2,
       type: 'takeHit',
     },
+    takeHitLeft: {
+      imageSrc: './img/chainBot/hitLeft.png',
+      framesMax: 2,
+      type: 'takeHit',
+    },
     death: {
       imageSrc: './img/chainBot/death.png',
       framesMax: 5,
@@ -119,7 +124,7 @@ const player2 = new Character({
 })
 
 
-const player = new Character({
+const player2 = new Character({
   position: {
     x: 600,
     y: 300
@@ -297,7 +302,17 @@ const player = new Character({
       framesMax: 5,
       type: 'death',
       deathHeight: 10
-    }
+    },
+    takeHit: {
+      imageSrc: './img/shockSweeper/hit.png',
+      framesMax: 2,
+      type: 'takeHit'
+    },
+    takeHitLeft: {
+      imageSrc: './img/shockSweeper/hitLeft.png',
+      framesMax: 2,
+      type: 'takeHit'
+    } 
     // charge: {
     //   imageSrc: './img/chainBot/charge.png',
     //   framesMax: 

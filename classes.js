@@ -119,7 +119,6 @@ class Character extends Sprite {
     // abilities cannot be canclled by another ability
     if (this.currentAnimType === 'attack' && this.sprites[sprite].type !== 'move' &&
       this.framesCurrent < this.sprites[this.currentSprite].framesMax && (this.framesCurrent === 0 ? (this.framesElapsed !== 0): true)) {
-        console.log(this.currentSprite)
         return
     }
 
@@ -239,11 +238,15 @@ class Character extends Sprite {
     // if current frame during attack animation should apply attack
     if (attackValid && 
       curSprite.attackBox.attackFrames[(this.framesCurrent).toString()] && 
-      this.framesElapsed === 0) {
+      this.framesElapsed === 1) {
       
       enemy.health = enemy.health >= 15 ? enemy.health - 15 : 0
       console.log('here')
-      enemy.switchSprite('takeHit')
+      if (enemy.direction === 'right') {
+        enemy.switchSprite('takeHit')
+      } else {
+        enemy.switchSprite('takeHitLeft')
+      }
     }
   }
 
