@@ -414,10 +414,3 @@ class Character extends Sprite {
 
 
 
-// NOTE
-/*
- * So far, the attack/movement system is decent. The only problem I have
- * is that the last frame for each animation only runs once. I might
- * fix this later.
- *
- */
