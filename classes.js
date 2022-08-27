@@ -111,9 +111,7 @@ class Character extends Sprite {
    
     // prevents jumpOrFall animation from being cancelled
     // regarding the third conditional, this is a "hacky" way to tell that
-    // we're still running the jumpOrFall animation. when an animation changes,
-    // framesElapsed will be set to 1 and not zero. therefore, if we're at frame 0
-    // and framesElapsed is 1, we know that we're on a new animation
+    // we're still running the jumpOrFall animation.
     if (this.currentAnimType === 'jumpOrFall' &&
       this.framesCurrent < this.sprites[this.currentSprite].framesMax && (this.framesCurrent === 0 ? (this.framesElapsed !== 0): true)) {
         return
